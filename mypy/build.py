@@ -3083,7 +3083,10 @@ def strongly_connected_components(vertices: AbstractSet[str],
     index = {}  # type: Dict[str, int]
     boundaries = []  # type: List[int]
 
+    _dfs = None  # type: Optional[Callable[[str], Iterator[Set[str]]]]
+
     def dfs(v: str) -> Iterator[Set[str]]:
+        assert _dfs
         index[v] = len(stack)
         stack.append(v)
         boundaries.append(index[v])
@@ -3091,7 +3094,7 @@ def strongly_connected_components(vertices: AbstractSet[str],
         for w in edges[v]:
             if w not in index:
                 # For Python >= 3.3, replace with "yield from dfs(w)"
-                for scc in dfs(w):
+                for scc in _dfs(w):
                     yield scc
             elif w not in identified:
                 while index[w] < boundaries[-1]:
@@ -3103,6 +3106,8 @@ def strongly_connected_components(vertices: AbstractSet[str],
             del stack[index[v]:]
             identified.update(scc)
             yield scc
+
+    _dfs = dfs
 
     for v in vertices:
         if v not in index:

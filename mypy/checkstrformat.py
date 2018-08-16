@@ -246,9 +246,11 @@ class StringFormatterChecker:
             expected = self.named_type('builtins.int')
             self.chk.check_subtype(type, expected, context, '* wants int')
 
+        _check_type = check_type
+
         def check_expr(expr: Expression) -> None:
             type = self.accept(expr, expected)
-            check_type(type)
+            _check_type(type)
 
         return check_expr, check_type
 
@@ -268,9 +270,11 @@ class StringFormatterChecker:
                               messages.INCOMPATIBLE_TYPES_IN_STR_INTERPOLATION,
                               'expression has type', 'placeholder has type')
 
+        _check_type = check_type
+
         def check_expr(expr: Expression) -> None:
             type = self.accept(expr, expected_type)
-            check_type(type)
+            _check_type(type)
 
         return check_expr, check_type
 
@@ -290,12 +294,14 @@ class StringFormatterChecker:
                               messages.INCOMPATIBLE_TYPES_IN_STR_INTERPOLATION,
                               'expression has type', 'placeholder has type')
 
+        _check_type = check_type
+
         def check_expr(expr: Expression) -> None:
             """int, or str with length 1"""
             type = self.accept(expr, expected_type)
             if isinstance(expr, (StrExpr, BytesExpr)) and len(cast(StrExpr, expr).value) != 1:
                 self.msg.requires_int_or_char(context)
-            check_type(type)
+            _check_type(type)
 
         return check_expr, check_type
 

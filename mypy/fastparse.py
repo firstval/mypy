@@ -720,6 +720,18 @@ class ASTConverter(ast3.NodeTransformer):
     # BoolOp(boolop op, expr* values)
     @with_line
     def visit_BoolOp(self, n: ast3.BoolOp) -> OpExpr:
+        op = ''
+        _group = None  # type: Optional[Callable[[List[Expression]], OpExpr]]
+
+        # potentially inefficient!
+        def group(vals: List[Expression]) -> OpExpr:
+            assert _group
+            if len(vals) == 2:
+                return OpExpr(op, vals[0], vals[1])
+            else:
+                return OpExpr(op, vals[0], _group(vals[1:]))
+        _group = group
+
         # mypy translates (1 and 2 and 3) as (1 and (2 and 3))
         assert len(n.values) >= 2
         if isinstance(n.op, ast3.And):
@@ -728,13 +740,6 @@ class ASTConverter(ast3.NodeTransformer):
             op = 'or'
         else:
             raise RuntimeError('unknown BoolOp ' + str(type(n)))
-
-        # potentially inefficient!
-        def group(vals: List[Expression]) -> OpExpr:
-            if len(vals) == 2:
-                return OpExpr(op, vals[0], vals[1])
-            else:
-                return OpExpr(op, vals[0], group(vals[1:]))
 
         return group(self.translate_expr_list(n.values))
 

@@ -795,7 +795,11 @@ class SemanticAnalyzerPass2(NodeVisitor[None],
 
     def apply_class_plugin_hooks(self, defn: ClassDef) -> None:
         """Apply a plugin hook that may infer a more precise definition for a class."""
-        def get_fullname(expr: Expression) -> Optional[str]:
+
+        get_fullname = None  # type: Optional[Callable[[Expression], Optional[str]]]
+
+        def _get_fullname(expr: Expression) -> Optional[str]:
+            assert get_fullname
             if isinstance(expr, CallExpr):
                 return get_fullname(expr.callee)
             elif isinstance(expr, IndexExpr):
@@ -810,6 +814,8 @@ class SemanticAnalyzerPass2(NodeVisitor[None],
                 if sym:
                     return sym.fullname
             return None
+
+        get_fullname = _get_fullname
 
         for decorator in defn.decorators:
             decorator_name = get_fullname(decorator)
