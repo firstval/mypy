@@ -137,7 +137,8 @@ def parse_type_comment(type_comment: str, line: int, errors: Optional[Errors]) -
 
 
 def with_line(f: Callable[['ASTConverter', T], U]) -> Callable[['ASTConverter', T], U]:
-    @wraps(f)
+    # mypyc doesn't properly populate all the fields that @wraps expects
+    # @wraps(f)
     def wrapper(self: 'ASTConverter', ast: T) -> U:
         node = f(self, ast)
         node.set_line(ast.lineno, ast.col_offset)

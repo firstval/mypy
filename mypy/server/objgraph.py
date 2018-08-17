@@ -2,6 +2,7 @@
 
 from collections.abc import Iterable
 from typing import List, Dict, Iterator, Tuple, Mapping
+import _weakref
 import weakref
 import types
 
